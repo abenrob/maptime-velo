@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+.navbar {
+  z-index: 2000;
+}
+#map {
+  position: absolute;
+  top: 41px;
+  bottom: 0;
+  width: 100%;
+}
