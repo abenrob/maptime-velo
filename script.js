@@ -4,6 +4,7 @@ var map = L.mapbox.map('map', 'mapbox.streets')
 var pos = [];
 var posMarker;
 var addressMarker;
+var bikeRoute;
 
 function closeNav() {
   $('.navHeaderCollapse').collapse('hide');
@@ -74,15 +75,25 @@ $('#get_address').click(function () {
     var group = new L.featureGroup([posMarker, addressMarker]);
     map.fitBounds(group.getBounds().pad(0.5));
     closeNav();
+    getRoute(pos, addressPos);
   });
 });
+
+function addLine(pts) {
+  if (bikeRoute) {map.removeLayer(bikeRoute);};
+
+  var polylineOptions = {
+    color: '#000',
+  };
+  bikeRoute = L.polyline(pts, polylineOptions).addTo(map);
+};
 
 function getRoute(fromPos, toPos) {
   var uri = 'http://data.metromobilite.fr/otp/routers/default/plan' +
             '?mode=BICYCLE&fromPlace=' + fromPos + '&toPlace=' + toPos;
   $.getJSON(uri, function (data) {
-    console.log(data);
+    var pts = data.plan.itineraries[0].legs[0].legGeometry.points;
+    var decoded = polyline.decode(pts);
+    addLine(decoded);
   });
 }
-
-getRoute([45.195456, 5.734961], [45.183911, 5.70345]);
