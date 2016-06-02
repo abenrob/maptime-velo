@@ -4,7 +4,8 @@ var map = L.mapbox.map('map', 'mapbox.streets')
 var pos = [];
 var posMarker;
 var addressMarker;
-var bikeRoute;
+var bikeRouteMM;
+var bikeRouteII;
 
 function closeNav() {
   $('.navHeaderCollapse').collapse('hide');
@@ -12,7 +13,6 @@ function closeNav() {
 
 function geoSuccess(position) {
   pos = [position.coords.latitude, position.coords.longitude];
-  console.log(pos);
   map.panTo(pos);
   if (posMarker) {map.removeLayer(posMarker);};
 
@@ -64,7 +64,7 @@ $('#get_address').click(function () {
 
     var coords = data.features[0].geometry.coordinates;
     var addressPos = [coords[1], coords[0]];
-    console.log(addressPos);
+
     addressMarker = L.marker(addressPos, {
       icon: L.mapbox.marker.icon({
         'marker-size': 'large',
@@ -79,21 +79,51 @@ $('#get_address').click(function () {
   });
 });
 
-function addLine(pts) {
-  if (bikeRoute) {map.removeLayer(bikeRoute);};
-
-  var polylineOptions = {
-    color: '#000',
-  };
-  bikeRoute = L.polyline(pts, polylineOptions).addTo(map);
-};
-
-function getRoute(fromPos, toPos) {
+function getMetromobiliteRoute(fromPos, toPos) {
   var uri = 'http://data.metromobilite.fr/otp/routers/default/plan' +
             '?mode=BICYCLE&fromPlace=' + fromPos + '&toPlace=' + toPos;
   $.getJSON(uri, function (data) {
     var pts = data.plan.itineraries[0].legs[0].legGeometry.points;
     var decoded = polyline.decode(pts);
-    addLine(decoded);
+    if (bikeRouteMM) {map.removeLayer(bikeRouteMM);};
+
+    bikeRouteMM = L.polyline(decoded, { color: 'blue' }).bindPopup('Metromobilité').addTo(map);
   });
+};
+
+function getItinisereRoute(fromPos, toPos) {
+  var d = new Date();
+  var dateString = d.toISOString().slice(0, 10);
+  var timeString = d.getHours() + '-' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+  var uri = 'http://www.itinisere.fr/webServices/TransinfoService/api/journeyplanner/v2/' +
+            'BikeTrip/json?DepLat=' + fromPos[0] + '&DepLon=' + fromPos[1] +
+            '&ArrLat=' + toPos[0] + '&ArrLon=' + toPos[1] +
+            '&Date=' + dateString + '&DepartureTime=' + timeString +
+            '&user_key=0016bf2ff47f630bab2e65bba954c091&Algorithm=FASTEST&callback=?';
+  $.getJSON(uri, function (data) {
+    var pathLinks = data.trips.Trip[0].sections.Section[0].Leg.pathLinks.PathLink;
+
+    var linkCoords = pathLinks.map(function (link) {
+      return wellknown.parse(link.Geometry).coordinates;
+    });
+
+    var coords = linkCoords.reduce(function (a, b) {
+      return a.concat(b);
+    });
+
+    var swappedCoords = coords.map(function (pair) {
+      return pair.reverse();
+    });
+
+    bikeRouteII = L.polyline(swappedCoords, { color: 'red' }).bindPopup('ItinIsère').addTo(map);
+  });
+};
+
+function getRoute(fromPos, toPos) {
+  if (bikeRouteMM) {map.removeLayer(bikeRouteMM);};
+
+  if (bikeRouteII) {map.removeLayer(bikeRouteII);};
+
+  getMetromobiliteRoute(fromPos, toPos);
+  getItinisereRoute(fromPos, toPos);
 }
