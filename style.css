@@ -5,6 +5,9 @@ body {
 .navbar {
   z-index: 2000;
 }
+.menu-btn {
+  width: 100%;
+}
 #map {
   position: absolute;
   top: 41px;

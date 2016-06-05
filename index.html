@@ -30,13 +30,22 @@
         </button>
       </div>
       <div class="collapse navbar-collapse navHeaderCollapse">
-        <form class="navbar-form navbar-right">
-          <button id="get_position" type="button" class="form-group btn btn-primary">Get position</button>
-          <div class="form-group">
-            <input id="address_search" type="text" class="form-control" placeholder="Search" disabled>
-          </div>
-          <button id="get_address" class="btn btn-success" onclick="return false;" disabled>Get address</button>
-        </form>
+        <ul class="nav navbar-nav navbar-right">
+          <li><button id="get_position" type="button" class="btn btn-primary">Get position</button></li>
+          <li><form class="navbar-form" role="search">
+            <div class="form-group">
+              <input id="address_search" type="text" class="form-control" placeholder="Search">
+            </div>
+            <button id="get_address" class="btn btn-success" onclick="return false;">Get address</button>
+          </form></li>
+          <li class="dropdown">
+            <button id="route-menu" class="dropdown-toggle btn btn-info" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" disabled>Get route <span class="caret"></span></button>
+            <ul class="dropdown-menu">
+              <li><button id="II-route" class="menu-btn btn btn-info">Itinisère</button></li>
+              <li><button id="MM-route" class="menu-btn btn btn-info">Métromobilité</button></li>
+            </ul>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
